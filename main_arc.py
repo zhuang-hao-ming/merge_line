@@ -208,6 +208,9 @@ def main():
     del insert_cursor
 
 if __name__ == '__main__':
-    main()
+    #main()
+    from timeit import Timer
+    t1 = Timer('main()', 'from __main__ import main')
+    print(t1.timeit(1))
     
 
