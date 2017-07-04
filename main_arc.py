@@ -25,26 +25,34 @@ def find_and_remove_from_pairs(id, pairs):
 def main():
 
 
-    # 命令行配置
-    parser = argparse.ArgumentParser(description='merge line')
-    parser.add_argument('-i', '--input', type=str, help='the path of the input file',  default='./line/line.shp')
-    parser.add_argument('-o', '--output', type=str, help='the path of the output file',  default='./out_shp0621.shp')
-    args = parser.parse_args()
+    # # 命令行配置
+    # parser = argparse.ArgumentParser(description='merge line')
+    # parser.add_argument('-i', '--input', type=str, help='the path of the input file',  default='./line/line.shp')
+    # parser.add_argument('-o', '--output', type=str, help='the path of the output file',  default='./out_shp0621.shp')
+    # args = parser.parse_args()
 
-    # 输入文件必须存在，输出文件必须不存在
-    if not os.path.exists(args.input):
-        print('the input path does not exist')
-        sys.exit()
-    if os.path.exists(args.output):
-        print('the output path does exist')
-        sys.exit()
+    # # 输入文件必须存在，输出文件必须不存在
+    # if not os.path.exists(input_file):
+    #     print('the input path does not exist')
+    #     sys.exit()
+    # if os.path.exists(output_file):
+    #     print('the output path does exist')
+    #     sys.exit()
+    
+    
+    input_file =  u'./shp/line2.shp'
+    output_file = u'./out1.shp'
+    
+    
 
+    startid_name = 'startid'
+    endid_name = 'endid'
 
 
 
     coordinate_to_point_dict = {}    
 
-    with arcpy.da.SearchCursor(args.input, ['OID@', 'SHAPE@', 'start_id', 'end_id']) as cursor:
+    with arcpy.da.SearchCursor(input_file, ['OID@', 'SHAPE@', startid_name, endid_name]) as cursor:
         for row in cursor:  
 
             #—— 获得线上的所有点
@@ -66,9 +74,9 @@ def main():
                     'id': row[0]
                 }
                 if idx == 0:
-                    point['start_id'] = row[2]                
+                    point[startid_name] = row[2]                
                 elif idx == 1:
-                    point['end_id'] = row[3]
+                    point[endid_name] = row[3]
                 key = str(point['x']) + ',' + str(point['y'])
                 if key not in coordinate_to_point_dict:
                     coordinate_to_point_dict[key] = [point]
@@ -121,11 +129,11 @@ def main():
     print('there are {0} groups needed to be merged'.format(len(fid_pair_groups)))
 
     # 新建新的shp
-    out_shp = args.output
-    arcpy.CreateFeatureclass_management(out_path=os.path.dirname(out_shp), out_name=os.path.basename(out_shp), geometry_type='POLYLINE', template=args.input,has_m='DISABLED', has_z='DISABLED', spatial_reference=args.input)
+    out_shp = output_file
+    arcpy.CreateFeatureclass_management(out_path=os.path.dirname(out_shp), out_name=os.path.basename(out_shp), geometry_type='POLYLINE', template=input_file,has_m='DISABLED', has_z='DISABLED', spatial_reference=input_file)
 
     # 
-    insert_cursor = arcpy.da.InsertCursor(out_shp, ['SHAPE@', 'start_id', 'end_id'])
+    insert_cursor = arcpy.da.InsertCursor(out_shp, ['SHAPE@', startid_name, endid_name])
 
 
     #  
@@ -140,7 +148,7 @@ def main():
 
         #——————查找对应fid的线的所有点
         for fid in fids:
-            with arcpy.da.SearchCursor(args.input, ['SHAPE@'], '"FID"={0}'.format(fid)) as cursor: # 
+            with arcpy.da.SearchCursor(input_file, ['SHAPE@'], '"FID"={0}'.format(fid)) as cursor: # 
                 for row in cursor:            
                     points = []
                     for part in row[0]:
@@ -177,8 +185,8 @@ def main():
         
         
 
-        start_id = coordinate_to_point_dict[str(new_points[0][0]) + ',' + str(new_points[0][1])][0]['start_id']
-        end_id = coordinate_to_point_dict[str(new_points[-1][0]) + ',' + str(new_points[-1][1])][0]['end_id']
+        start_id = coordinate_to_point_dict[str(new_points[0][0]) + ',' + str(new_points[0][1])][0][startid_name]
+        end_id = coordinate_to_point_dict[str(new_points[-1][0]) + ',' + str(new_points[-1][1])][0][endid_name]
         
         arcpy_points = [arcpy.Point(*points) for points in new_points]
 
@@ -190,7 +198,7 @@ def main():
         print('merge {0} success'.format(fids))
 
     # 输出其它不需要merge的线
-    with arcpy.da.SearchCursor(args.input, ['OID@', 'SHAPE@', 'start_id', 'end_id']) as cursor:
+    with arcpy.da.SearchCursor(input_file, ['OID@', 'SHAPE@', startid_name, endid_name]) as cursor:
         for row in cursor:
             id = row[0]
             if id not in fid_in_need_merge:
@@ -208,9 +216,9 @@ def main():
     del insert_cursor
 
 if __name__ == '__main__':
-    #main()
-    from timeit import Timer
-    t1 = Timer('main()', 'from __main__ import main')
-    print(t1.timeit(1))
+    main()
+    # from timeit import Timer
+    # t1 = Timer('main()', 'from __main__ import main')
+    # print(t1.timeit(1))
     
 
