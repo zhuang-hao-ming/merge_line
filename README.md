@@ -43,3 +43,9 @@ optional arguments:
 ```
 
 注意，路径应该包含目录。输入路径必须存在，输出路径必须不存在。
+
+## 屏幕截图
+
+![合并前](https://github.com/zhuang-hao-ming/merge_line/blob/master/screenshot/%E7%A4%BA%E6%84%8F%E8%A6%81%E5%90%88%E5%B9%B6%E7%9A%84%E7%82%B9.jpg)
+
+![合并后](https://github.com/zhuang-hao-ming/merge_line/blob/master/screenshot/%E5%90%88%E5%B9%B6%E7%BB%93%E6%9E%9C.jpg)
